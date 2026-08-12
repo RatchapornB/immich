@@ -27,3 +27,11 @@ vite.config.js.timestamp-*
 .devcontainer/.env*
 *.tsbuildinfo
 *.tsbuildInfo
+
+# Ignore Immich data and database volumes
+library/
+postgres/
+
+# (Optional) ปกติแล้วโปรเจกต์ระดับ Production จะ Ignore .env ด้วยเพื่อความปลอดภัย
+# แต่ถ้ารอบก่อนหน้าเราเผลอ push ไปแล้ว หรืออยากให้เพื่อนในกลุ่มเห็นด้วย ก็ยังไม่ต้องใส่บรรทัดล่างนี้ครับ
+# .env
