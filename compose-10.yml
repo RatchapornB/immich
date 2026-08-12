@@ -1,0 +1,65 @@
+name: immich-group10
+
+services:
+  immich-server:
+    container_name: group10_immich_server
+    image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
+    volumes:
+      - ${UPLOAD_LOCATION}:/usr/src/app/upload
+      - /etc/localtime:/etc/localtime:ro
+    env_file:
+      - .env
+    ports:
+      - "${IMMICH_PORT}:2283"
+    depends_on:
+      - redis
+      - database
+    restart: always
+    networks:
+      - group10-network
+
+  immich-machine-learning:
+    container_name: group10_immich_machine_learning
+    image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}
+    volumes:
+      - model-cache:/cache
+    env_file:
+      - .env
+    restart: always
+    networks:
+      - group10-network
+
+  redis:
+    container_name: group10_immich_redis
+    image: redis:6.2-alpine
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping || exit 1"]
+    restart: always
+    networks:
+      - group10-network
+
+  database:
+    container_name: group10_immich_postgres
+    image: pgvector/pgvector:pg14
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_DATABASE_NAME}
+      POSTGRES_INITDB_ARGS: '--data-checksums'
+    volumes:
+      - ${DB_DATA_LOCATION}:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready --dbname=${DB_DATABASE_NAME} --username=${DB_USERNAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: always
+    networks:
+      - group10-network
+
+volumes:
+  model-cache:
+
+networks:
+  group10-network:
+    driver: bridge
